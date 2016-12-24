@@ -1,0 +1,47 @@
+---
+title: "San Francisco Crime Report - Jingbin Xu 24 Dec 2016"
+output: html_document
+---
+
+##INTRODUCTION
+#The San Francisco crime dataset provides a special opportunity to play with data visually. As a hobbyist photographer, I am a big fan of pretty pictures. Since the dataset covers a wide variety of crimes, visualizing them all at once might wash out any patterns contained in smaller subgroups. I have elected to see if there are any patterns within violent crime that can be explored visually.
+
+##THE DATA
+```{r cars}
+##Columns include logitude and latitude, the category the crime is classified as,and date and time. When we import the data, we extract the Year, Month, Day, and Hour as individual columns. This will allow us to break out our visualizations more easily into these dimensions. Lets look at all the crime categories to see which might fall under the umbrella of ???Violent Crime???
+```
+
+```{R}
+library(dplyr)
+library(readr)
+library(lubridate)
+coltypes <-list(Dates = col_datetime("%Y-%m-%d %H:%M:%S"))
+train <-read_csv("train-2.csv",col_types=coltypes)
+test <-read_csv("test-2.csv",col_types=coltypes) 
+train <-train %>%
+    mutate(Year  = factor(year(Dates), levels=2003:2015),
+           Month = factor(month(Dates), levels=1:12),
+           Day   = day(Dates),
+           Hour  = factor(hour(Dates), levels=0:23),
+           dayDate = as.POSIXct(round(Dates, units = "days")),
+           DayOfWeek = factor(DayOfWeek, levels=c("Monday",
+                                                  "Tuesday",
+                                                  "Wednesday",
+                                                  "Thursday",
+                                                  "Friday",
+                                                  "Saturday",
+                                                  "Sunday"))
+           )
+unique(train$Category)
+```
+##Observation
+```{r pressure, echo=FALSE}
+mapdata <-
+    train %>%
+    filter(Category %in% c("ASSAULT", "ROBBERY", "SEX OFFENSES FORCIBLE"))
+
+mapdata %>%
+group_by(Category) %>%
+summarise(n=n())
+```
+#Occurences of assault far outnumber the other crimes, and as such will be heavily represented in any aggregate observations. It will be interesting to look at violent crime both in aggregate and by specific category.
